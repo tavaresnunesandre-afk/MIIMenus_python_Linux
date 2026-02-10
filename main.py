@@ -1,11 +1,13 @@
 
 import sys
 print("MIIMenus Login v1.0 - User+SQL")
+import keyring
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, 
                                QVBoxLayout, QWidget, QHBoxLayout)
 from PySide6.QtCore import Qt, QTimer  # + QTimer
 from PySide6.QtGui import QFont
+
 
 class LoginMIIMenus(QMainWindow):
     def __init__(self):
@@ -64,7 +66,7 @@ class LoginMIIMenus(QMainWindow):
         layout.addWidget(lbl_user)
         self.pass_input = QLineEdit()
         self.pass_input.setPlaceholderText("Digite o seu utilizador")
-        self.pass_input.setEchoMode(QLineEdit.Password)  # **** cada user
+        # self.pass_input.setEchoMode(QLineEdit.Password)   **** cada user
         layout.addWidget(self.pass_input)
         
         # Campo 2: Ligação SQL (SEM label baixo)
@@ -90,22 +92,42 @@ class LoginMIIMenus(QMainWindow):
         self.setCentralWidget(central)
         print("Login pronto")
         self.sql_input 
+        self.guarda_password_miimenus() # 1x guarda password
 
     def tenta_login(self):
         user_pass = self.pass_input.text()
         sql_conn = self.sql_input.text()
-        print(f"Tentativa: PASS='{user_pass}' SQL='{sql_conn}'")
         
-        # TESTE simples (melhorar com DB real)
-        if user_pass and sql_conn:  # Não vazios
-            print("Login OK! Abre menus...")
-            # TODO: self.abre_tela_menus()
+        #RECUPERA PASSWORD GUARDADA
+        service = "MIIMenus"
+        username = "miimenus_user"
+        password_bd = keyring.get_password(service, username)
+
+        print(f"Login: PASS='{user_pass}' | BD='{password_bd}' | SQL='{sql_conn}'")
+
+        if password_bd == "2m87p1" and sql_conn:
+            print("LOGIN OK - Password VÁLIDA!")
+            self.abre_tela_menus()
         else:
-            print("Campos vazios!")
+            print("Password errada/vazia!")
             
     def testa_ligacao_auto(self):
         sql_string = self.sql_input.text()
- 
+
+    def guarda_password_miimenus(self):
+        """Guarda '2m87p1' segura (corre 1x)"""
+        service = "MIIMenus"
+        username = "miimenus_user"
+        password = "2m87p1"
+        keyring.set_password(service, username, password)
+        print("Password '2m87p1' GUARDADA keyring")
+
+    def abre_tela_menus(self):
+        """Abre janela menus (próxima tela)"""
+        from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget
+        self.menu_window = QMainWindow()
+        self.menu_window.setWindowTitle("MIIMenus - Menus Principais")   
+    
 
 if __name__ == "__main__":
     print("Lançando app...")
